@@ -2,13 +2,14 @@ const mongoose = require("mongoose");
 
 const userSchema = mongoose.Schema(
   {
-    mobileno: {
+    email: {
       type: String,
       trim: true,
+      required: true,
     },
-    isAdmin: {
-      type: Boolean,
-      default: false,
+    password: {
+      type: String,
+      required: true,
     },
   },
   {
