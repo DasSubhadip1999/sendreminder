@@ -20,5 +20,5 @@ exports.login = catchAsync(async (req, res, next) => {
     return;
   }
 
-  res.status(200).json(userExist);
+  res.status(200).json({ email: userExist.email, id: userExist._id });
 });

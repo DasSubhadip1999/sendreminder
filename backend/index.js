@@ -5,11 +5,13 @@ const { errorHanlder } = require("./middlewares/errorHanlder");
 const AppError = require("./utils/AppError");
 const { connectDB } = require("./config/db");
 const userRouter = require("./routes/userRouter");
+const accessControl = require("./middlewares/accessControl");
 const PORT = process.env.PORT;
 
 const app = express();
 connectDB();
 
+app.use(accessControl);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.get("/", (req, res) => {
