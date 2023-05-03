@@ -34,8 +34,14 @@ exports.login = catchAsync(async (req, res, next) => {
   if (userExist.password.toString() !== password) {
     const loginCount = userExist.loginCount + 1;
     await User.findByIdAndUpdate(userExist._id, {
-      $set: { lastLoginTime: new Date().getTime(), loginCount },
+      $set: { loginCount },
     });
+
+    if (loginCount > 4) {
+      await User.findByIdAndUpdate(userExist._id, {
+        $set: { lastLoginTime: new Date().getTime() },
+      });
+    }
 
     next(new AppError("Wrong credentials", 404));
     return;

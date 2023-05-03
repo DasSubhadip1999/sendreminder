@@ -154,6 +154,9 @@ const Form = ({ setData }) => {
             "Submit"
           )}
         </button>
+        {is24hCrossed.condition && (
+          <span>Change your tab or refresh to login with another account</span>
+        )}
       </form>
     </div>
   );

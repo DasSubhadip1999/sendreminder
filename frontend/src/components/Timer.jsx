@@ -11,7 +11,6 @@ const Timer = ({ time }) => {
   const { hours, minutes, seconds } = timerDetails;
 
   useEffect(() => {
-    console.log("running");
     const targetDate = new Date(time).getTime() + 24 * 60 * 60 * 1000;
     const now = new Date().getTime();
     const diff = targetDate - now;
@@ -31,7 +30,7 @@ const Timer = ({ time }) => {
     //eslint-disable-next-line
   }, [seconds]);
 
-  return <div>{`${hours} : ${minutes} : ${seconds}`}</div>;
+  return <div>{`${hours}hh : ${minutes}mm : ${seconds}ss`}</div>;
 };
 
 export default Timer;
