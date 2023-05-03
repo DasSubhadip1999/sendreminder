@@ -1,12 +1,24 @@
 import axios from "axios";
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { HiOutlineEye } from "react-icons/hi";
 import { RxEyeNone } from "react-icons/rx";
 import ClipLoader from "react-spinners/ClipLoader";
-import { setItemToStorage } from "@/functions/localstorage";
+import {
+  getItemFromStorage,
+  removeItemFromStorage,
+  setItemToStorage,
+} from "../functions/localstorage";
+import Timer from "./Timer";
 
+// eslint-disable-next-line react/prop-types
 const Form = ({ setData }) => {
+  const [is24hCrossed, setIs24hCrossed] = useState(
+    getItemFromStorage("time") || {
+      condition: false,
+      time: "",
+    }
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -15,6 +27,19 @@ const Form = ({ setData }) => {
   });
 
   const { email, password } = formData;
+
+  useEffect(() => {
+    const targetDate = new Date(is24hCrossed.time).getTime() + 2 * 60 * 1000;
+    const now = new Date().getTime();
+    const diff = targetDate - now;
+
+    if (diff < 0) {
+      setIs24hCrossed({ condition: false, time: "" });
+      removeItemFromStorage("time");
+    }
+
+    //eslint-disable-next-line
+  }, []);
 
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -40,9 +65,12 @@ const Form = ({ setData }) => {
       );
       setData(res.data);
       setItemToStorage("user", res.data);
+      setIs24hCrossed({ condition: false, time: "" });
+      removeItemFromStorage("time");
       setIsLoading(false);
       setFormData({ email: "", password: "" });
     } catch (error) {
+      console.log(error);
       const message =
         (error.response &&
           error.response.data &&
@@ -50,6 +78,16 @@ const Form = ({ setData }) => {
         error.message ||
         error.toString();
       setIsLoading(false);
+      if (message === "maximum login try exceeded") {
+        setIs24hCrossed({
+          condition: true,
+          time: error.response.data.time,
+        });
+        setItemToStorage("time", {
+          condition: true,
+          time: error.response.data.time,
+        });
+      }
       const msgArr = message.split(",");
       msgArr.forEach((msg) => toast.error(msg));
     }
@@ -103,8 +141,18 @@ const Form = ({ setData }) => {
             />
           )}
         </div>
-        <button type="submit" className="btn btn-primary w-full mt-1">
-          {isLoading ? <ClipLoader color="#fff" size={22} /> : "Submit"}
+        <button
+          disabled={is24hCrossed.condition}
+          type="submit"
+          className="btn btn-primary w-full mt-1"
+        >
+          {isLoading ? (
+            <ClipLoader color="#fff" size={22} />
+          ) : is24hCrossed.condition ? (
+            <Timer time={is24hCrossed.time} />
+          ) : (
+            "Submit"
+          )}
         </button>
       </form>
     </div>

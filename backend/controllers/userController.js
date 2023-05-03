@@ -15,7 +15,28 @@ exports.login = catchAsync(async (req, res, next) => {
     return;
   }
 
+  const is24hCrossed =
+    Date.now() >
+    new Date(userExist.lastLoginTime).getTime() + 24 * 60 * 60 * 1000;
+
+  if (userExist.loginCount >= 5 && !is24hCrossed) {
+    res.status(401).json({
+      message: "maximum login try exceeded",
+      time: userExist.lastLoginTime,
+    });
+    return;
+  } else {
+    await User.findByIdAndUpdate(userExist._id, {
+      $set: { loginCount: 0 },
+    });
+  }
+
   if (userExist.password.toString() !== password) {
+    const loginCount = userExist.loginCount + 1;
+    await User.findByIdAndUpdate(userExist._id, {
+      $set: { lastLoginTime: new Date().getTime(), loginCount },
+    });
+
     next(new AppError("Wrong credentials", 404));
     return;
   }
